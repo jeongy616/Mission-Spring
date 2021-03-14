@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member.dao.MemberDAO">
+ 	
+ <!-- 1.로그인 -->
+	<select id="selectById" resultType="memberVO" parameterType="memberVO">
+		select id,name,address,email,birth,customer_no as customerNo,phone_no as phoneNumber,user_type as userType
+		from t_member where id = #{id} and password= #{password}
+	</select>
+	
+ <!-- 2.회원가입-->
+ 	<!-- 2단계 : 계좌정보, 계좌비밀번호 확인하기-->
+ 	<select id="selectByAccount" resultType="java.util.Map" parameterType="String">
+		select account_no as accountNo,customer_no as customerNo,id
+		from t_loan_detail where account_no = #{no}
+	</select>
+	<select id="selectByAccountPassword" resultType="String" parameterType="String">
+		select account_password from t_loan_detail where account_no = #{no}
+	</select>
+	
+	<!-- 3단계 -->
+	<insert id="insert" parameterType="memberVO">
+		insert into t_member(id,password,name,birth,address,phone_no,email,customer_no) 
+		values(#{id},#{password},#{name},#{birth},#{address},#{phoneNumber},#{email},#{customerNo})
+	</insert>
+	<!-- 4단계  : 추가정보 기입하기(소득정보)-->
+	
+	
+<!-- 회원정보 수정하기 -->
+	<select id="selectByCustomerNo" resultType="java.util.Map" parameterType="String">
+		select M.name,M.email,M.birth,M.phone_no as phoneNumber,M.address
+				,I.income_type1 as incomeType1
+				,I.income_type2 as incomeType2
+				,I.income_type3 as incomeType3
+				,I.income_type4 as incomeType4
+				,to_char(I.income_money,'999,999,999,999') as incomeMoney  
+				from t_member M,t_member_income I 
+				where M.customer_no =#{customer} and M.customer_no = I.customer_no
+	</select>
+	
+	<update id="update" parameterType="java.util.Map">
+		update t_member set email=#{email},phone_no=#{phoneNo},address=#{address} where customer_no=#{customerNo}
+	</update>
+	
+	<update id="update2" parameterType="java.util.Map">
+		update t_member_income set income_type1 = #{incomeType1}
+                                    			,income_type2 = #{incomeType2}
+                                    			,income_type3 = #{incomeType3}
+                                   				 ,income_type4 = #{incomeType4}
+                                   				 ,income_money = ${incomeMoney}
+                                    			,pro_etc = #{proEtc} 
+                                    where customer_no =#{customerNo}
+	</update>
+	
+	<select id="selectFile" parameterType="String" resultType="fileVO">
+		select	 no, 
+				customer_no as customerNo,
+				orginfile_name1 as originFileName1,
+				savefile_name1 as saveFileName1,
+				orginfile_name2 as originFileName2,
+				savefile_name2 as saveFileName2,
+				orginfile_name3 as originFileName3,
+				savefile_name3 as saveFileName3,
+				reg_date as regDate,
+				status
+				from t_loan_file 
+				where customer_no =  #{customer}
+				order by regDate desc
+	</select>
+	
+</mapper>

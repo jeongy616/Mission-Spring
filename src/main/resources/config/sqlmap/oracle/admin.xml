@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="admin.dao.AdminDAO">
+
+	<!-- 해당  관리자 페이지의 고객 목록 -->
+	<select id="selectCustomer" resultType="java.util.Map" parameterType="java.util.Map">
+		select id as ID,name as NAME,address as ADDRESS,email,birth,customer_no as CUSTOMER_NO,phone_no as phoneNumber,user_type as userType
+		from (select rownum as rnum, b.* 
+				 from (select a.* from t_member a order by customer_no desc) b)
+		where rnum <![CDATA[>=]]> #{start} and rnum <![CDATA[<=]]> #{end}
+	</select>
+	
+	<!--  전체 고객 수 -->
+	<select id="selectCustomerCount" resultType="Integer">
+		select count(*) as count from t_member
+	</select>
+	
+	<!-- 해당 고객의 파일 목록 가져오기 -->
+	<select id="selectCustomerFile" resultType="fileVO" parameterType="String">
+		select no
+				,customer_no as customerNo
+				,orginfile_name1 as originFileName1
+				,savefile_name1 as saveFileName1
+				,orginfile_name2 as originFileName2
+				,savefile_name2 as saveFileName2
+				,orginfile_name3 as originFileName3
+				,savefile_name3 as saveFileName3
+				,to_char(reg_date,'YYYY-MM-DD HH:MI') as regDate
+				,status 
+				from t_loan_file 
+				where customer_no = #{no} and status = 0
+				order by reg_date desc
+	</select>
+	
+	<!-- 키워드로 고객 검색 -->
+	<select id="selectCustomerByKeyword" resultType="java.util.Map" parameterType="java.util.Map">
+		select f.*,m.*
+			from t_member m, (select rownum as rnum, b.* 
+				 	from (select a.* from t_member a order by customer_no desc) b) f
+		where rnum <![CDATA[>=]]> #{start} and rnum <![CDATA[<=]]> #{end} 
+															 and m.customer_no = f.customer_no
+															 and m.${type} = #{keyword}
+															 
+	</select>
+	<select id="selectCutomerCountByKeword" parameterType="java.util.Map" resultType="int">
+	 	select count(*)
+			from t_member m, (select rownum as rnum, b.* 
+				 	from (select a.* from t_member a order by customer_no desc) b) f
+		where  m.customer_no = f.customer_no  and m.${type} = #{keyword}
+	</select>
+	
+	<!-- 해당 날짜의 cofix 정보 가져오기  -->
+	<select id="selectCofix" resultType="java.util.Map" parameterType="String">
+		select cofix_new_rate6,cofix_new_rate12,cofix_bal_rate6,cofix_bal_rate12,newcofix_rate6,newcofix_rate12,short_cofix_rate6
+				,to_char(reg_date,'YYYY"년"MM"월"DD"일"') as REGDATE from t_cofix  where to_char(reg_date,'YYMMDD') = #{reg}
+	</select>
+	<!-- cofix의 전체 날짜 구하기 -->
+	<select id="selectCofixAll" resultType="java.util.Map">
+		select to_char(reg_date,'YYYY"년"MM"월"DD"일"') as REGDATE from t_cofix order by reg_date
+	</select>
+	<select id="selectCofixDate" parameterType="String" resultType="Integer">
+		select count(*) from t_cofix where to_char(reg_date,'YYMMDD') = #{date} 
+	</select>
+	<insert id ="insertCofix" parameterType="java.util.Map">
+		insert into t_cofix values(#{cofix1},#{cofix2},#{cofix3},#{cofix4},#{cofix5},#{cofix6},#{cofix7},sysdate)
+	</insert>
+	<!-- 서류 파일 상태 업데이트하기 -->
+	<update id="updateFileStatus" parameterType="Integer">
+			update t_loan_file 
+			set status = 1 
+			where status = 0 and no = #{no}
+	</update>
+	
+	<insert id="insertItem" parameterType="java.util.Map">
+			insert into t_loan_item values(t_loan_item_seq.nextval,#{title},#{intro},#{context},#{link},#{character},#{job})
+	</insert>
+</mapper>

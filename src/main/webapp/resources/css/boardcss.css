@@ -1,0 +1,27 @@
+@charset "UTF-8";
+
+table, th, td{
+   border: 1px solid #D4E0EE;
+   border-collapse: collapse;
+   font-family: 'Noto Sans KR', sans-serif;
+   color: #555;
+   
+}
+table{
+   width: 100%;
+   
+}
+th, td{
+   padding: 5px;
+
+   }
+th{
+   background-color: #E6EDF5;
+   color: #4776A3;
+}
+table tr:nth-child(2n-1){
+   background-color: #ff8080;
+}
+table tr:hover{
+	background-color: #fefdcf;
+}

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context   
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<context:component-scan base-package="kr.co.mlec" />
+    <mvc:annotation-driven>
+    	<mvc:message-converters>
+    		<bean class="org.springframework.http.converter.StringHttpMessageConverter">
+    			<property name="supportedMediaTypes">
+    				<list>
+    					<value>text/html; charset=utf-8</value>
+    				</list>
+    			</property>
+    		</bean>
+    		<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+    			<property name="supportedMediaTypes">
+    				<list>
+    					<value>text/html; charset=utf-8</value>
+    					<value>application/json; charset=utf-8</value>
+    				</list>
+    			</property>
+    		</bean>
+    	</mvc:message-converters>
+    </mvc:annotation-driven>
+	<mvc:default-servlet-handler />
+	
+	<!-- DB 및 MyBatis 설정 -->
+	<bean id="dataSource" 
+		  class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="jdbc:oracle:thin:@database-1.cil9me2auziv.ap-northeast-2.rds.amazonaws.com:1521:ORCL" />
+		<property name="username" value="admin" />
+		<property name="password" value="lovely18^^" />
+	</bean>
+	
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:config/mybatis/sqlMapConfig.xml" />
+		<property name="mapperLocations" value="classpath:config/sqlmap/oracle/*.xml" />
+	</bean>
+	
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	
+	<bean id="multipartResolver"
+		  class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10485760"></property>
+	</bean>
+	
+	<mvc:view-controller path="/index" view-name="/etc/main"/>
+	<mvc:view-controller path="/news" view-name="/etc/news"/>
+	<mvc:view-controller path="/calculator" view-name="/loan/loanCalculator"/>
+	<mvc:view-controller path="/register" view-name="/member/signUp1"/>
+	<mvc:view-controller path="/register2" view-name="/member/signUp2"/>
+	<mvc:view-controller path="/register4" view-name="/member/signUp4"/>
+	<mvc:view-controller path="/admin"  view-name="/admin/main"/>
+	<mvc:view-controller path="/manageCustomer"  view-name="/admin/manageCustomer"/>
+	
+	<mvc:view-resolvers>
+		<mvc:jsp prefix="/WEB-INF/jsp/" suffix=".jsp" />
+	</mvc:view-resolvers>
+
+	<bean id="loginInterceptor" class="kr.co.mlec.interceptor.LoginInterceptor"/>
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/loan"/>
+			<mvc:mapping path="/mypage"/>
+			<mvc:mapping path="/mypage/update"/>
+			<mvc:mapping path="/mypage/update"/>
+			<mvc:mapping path="/myStatus/"/>
+			<mvc:mapping path="/admin/**"/>
+			<ref bean="loginInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<bean id="MutipartResolver"  class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="100000000" />
+		<property name="maxInMemorySize" value="100000000" />
+	</bean>
+</beans>
